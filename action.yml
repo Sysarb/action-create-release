@@ -30,11 +30,6 @@ runs:
         git config --global user.email "devops@sysarb.se"
         git config --global user.name "Sysarb"
 
-    - name: Set release version
-      shell: bash
-      run: |
-        npm version ${{ inputs.version }} --no-git-tag-version
-
     - name: Set PROD env
       shell: bash
       if: "${{ inputs.target }} == 'prod'"
