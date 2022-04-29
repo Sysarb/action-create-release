@@ -1,6 +1,10 @@
 name: 'Update manifests'
 description: 'Create micro service release'
 inputs:
+  name:
+    description: 'Name of the micro service'
+    required: true
+
   token:
     description: 'GitHub token'
     required: true
