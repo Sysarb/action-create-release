@@ -1,0 +1,105 @@
+name: 'Update manifests'
+description: 'Create micro service release'
+inputs:
+  token:
+    description: 'GitHub token'
+    required: true
+
+  target:
+    description: 'Deployment target, [prod | dev]'
+    required: true
+
+  version:
+    description: 'Release version'
+    required: true
+
+  registry:
+    description: 'Docker registry'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure git
+      shell: bash
+      run: |
+        git config --global user.email "devops@sysarb.se"
+        git config --global user.name "Sysarb"
+
+    - name: Set release version
+      shell: bash
+      run: |
+        npm version ${{ inputs.version }} --no-git-tag-version
+
+    - name: Set PROD env
+      shell: bash
+      if: "${{ inputs.target }} == 'prod'"
+      run: |
+        echo "BUILD_PREFIX=" >> $GITHUB_ENV
+
+    - name: Set DEV env
+      shell: bash
+      if: "${{ inputs.target }} == 'dev'"
+      run: |
+        echo "BUILD_PREFIX=-dev" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+      env:
+        NPM_TOKEN: ${{ inputs.token }}
+
+    - name: Build
+      shell: bash
+      run: npm run build
+
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@master
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v1
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ inputs.token }}
+
+    - name: Extract metadata for Docker
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.name }}
+
+    - name: Build and push container
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        builder: ${{ steps.buildx.outputs.name }}
+        platforms: linux/amd64
+        tags: ${{ inputs.registry }}/${{ inputs.name }}:${{ inputs.version }},${{ inputs.registry }}/${{ inputs.name }}:latest${{ env.BUILD_PREFIX }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Checkout release-tools
+      uses: actions/checkout@v2
+      with:
+        repository: Sysarb/release-tools
+        token: ${{ inputs.token }}
+        path: ./release-tools
+
+    - name: Install release-tools
+      shell: bash
+      run: |
+        npm --prefix ./release-tools ci --production
+
+    - name: Prepare for NPM
+      shell: bash
+      run: |
+        node ./release-tools/prepare-npm-packages.js
+
+    - name: Publish NPM
+      shell: bash
+      run: |
+        npm publish
+      env:
+        NPM_TOKEN: ${{ inputs.token }}
