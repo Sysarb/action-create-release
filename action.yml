@@ -14,7 +14,7 @@ inputs:
     required: true
 
   version:
-    description: 'Release version'
+    description: 'Package version'
     required: true
 
   registry:
@@ -24,6 +24,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install node
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
     - name: Configure git
       shell: bash
       run: |
@@ -47,6 +52,18 @@ runs:
       run: npm ci
       env:
         NPM_TOKEN: ${{ inputs.token }}
+
+    - name: Checkout release-tools
+      uses: actions/checkout@v2
+      with:
+        repository: Sysarb/release-tools
+        token: ${{ inputs.token }}
+        path: ./release-tools
+
+    - name: Install release-tools
+      shell: bash
+      run: |
+        npm --prefix ./release-tools ci --production
 
     - name: Build
       shell: bash
@@ -79,24 +96,12 @@ runs:
         tags: ${{ inputs.registry }}/${{ inputs.name }}:${{ inputs.version }},${{ inputs.registry }}/${{ inputs.name }}:latest${{ env.BUILD_PREFIX }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Checkout release-tools
-      uses: actions/checkout@v2
-      with:
-        repository: Sysarb/release-tools
-        token: ${{ inputs.token }}
-        path: ./release-tools
-
-    - name: Install release-tools
-      shell: bash
-      run: |
-        npm --prefix ./release-tools ci --production
-
-    - name: Prepare for NPM
+    - name: Prepare NPM package
       shell: bash
       run: |
         node ./release-tools/prepare-npm-packages.js
 
-    - name: Publish NPM
+    - name: Publish NPM package
       shell: bash
       run: |
         npm publish
