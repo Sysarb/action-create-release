@@ -38,13 +38,13 @@ runs:
 
     - name: Set PROD env
       shell: bash
-      if: "${{ inputs.target }} == 'prod'"
+      if: inputs.target == 'prod'
       run: |
         echo "BUILD_PREFIX=" >> $GITHUB_ENV
 
     - name: Set DEV env
       shell: bash
-      if: "${{ inputs.target }} == 'dev'"
+      if: inputs.target == 'dev'
       run: |
         echo "BUILD_PREFIX=-dev" >> $GITHUB_ENV
 
