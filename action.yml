@@ -17,10 +17,6 @@ inputs:
     description: 'Package version'
     required: true
 
-  registry:
-    description: 'Docker registry'
-    required: true
-
 runs:
   using: "composite"
   steps:
@@ -34,6 +30,11 @@ runs:
       run: |
         git config --global user.email "devops@sysarb.se"
         git config --global user.name "Sysarb"
+
+    - name: Set SHARED env
+      shell: bash
+      run: |
+        echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
 
     - name: Set PROD env
       shell: bash
@@ -76,7 +77,7 @@ runs:
     - name: Log in to the Container registry
       uses: docker/login-action@v1
       with:
-        registry: ${{ inputs.registry }}
+        registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ inputs.token }}
 
@@ -84,7 +85,7 @@ runs:
       id: meta
       uses: docker/metadata-action@v3
       with:
-        images: ${{ inputs.registry }}/${{ inputs.name }}
+        images: ${{ env.REGISTRY }}/${{ inputs.name }}
 
     - name: Build and push container
       uses: docker/build-push-action@v2
@@ -93,7 +94,7 @@ runs:
         push: true
         builder: ${{ steps.buildx.outputs.name }}
         platforms: linux/amd64
-        tags: ${{ inputs.registry }}/${{ inputs.name }}:${{ inputs.version }},${{ inputs.registry }}/${{ inputs.name }}:latest${{ env.BUILD_PREFIX }}
+        tags: ${{ env.REGISTRY }}/${{ inputs.name }}:${{ inputs.version }},${{ env.REGISTRY }}/${{ inputs.name }}:latest${{ env.BUILD_PREFIX }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Prepare NPM package
