@@ -101,7 +101,7 @@ runs:
       shell: bash
       run: |
         node ./release-tools/prepare-npm-packages.js
-        npm version ${{ inputs.version }} --no-git-tag-version
+        npm version ${{ inputs.version }} --no-git-tag-version ---allow-same-version
 
     - name: Publish NPM package
       shell: bash
