@@ -127,13 +127,13 @@ runs:
         NPM_TOKEN: ${{ inputs.token }}
 
     - name: Create DNS record
-      uses: rez0n/create-dns-record@v2.1
+      uses: domenix/create-dns-record@master
       if: inputs.hostname != ''
       with:
-        type: "AAAA"
+        type: "A"
         name: ${{ inputs.hostname }}
         content: ${{ inputs.cloudflare_ip }}
-        ttl: 1
+        ttl: 120
         proxied: 'false'
         token: ${{ inputs.cloudflare_token }}
         zone: ${{ inputs.cloudflare_zone }}
