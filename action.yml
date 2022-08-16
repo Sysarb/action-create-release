@@ -134,6 +134,5 @@ runs:
         name: ${{ inputs.hostname }}
         content: ${{ inputs.cloudflare_ip }}
         ttl: 1
-        proxied: false
         token: ${{ inputs.cloudflare_token }}
         zone: ${{ inputs.cloudflare_zone }}
