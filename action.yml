@@ -70,18 +70,6 @@ runs:
       env:
         NPM_TOKEN: ${{ inputs.token }}
 
-    - name: Checkout release-tools
-      uses: actions/checkout@v2
-      with:
-        repository: Sysarb/release-tools
-        token: ${{ inputs.token }}
-        path: ./release-tools
-
-    - name: Install release-tools
-      shell: bash
-      run: |
-        npm --prefix ./release-tools ci --production
-
     - name: Build
       shell: bash
       run: npm run build
@@ -116,7 +104,7 @@ runs:
     - name: Prepare NPM package
       shell: bash
       run: |
-        node ./release-tools/prepare-npm-packages.js
+        node ${{ github.action_path }}/prepare-npm-packages.js
         npm version ${{ inputs.version }} --no-git-tag-version ---allow-same-version
 
     - name: Publish NPM package
