@@ -130,9 +130,10 @@ runs:
       uses: rez0n/create-dns-record@v2.1
       if: inputs.hostname != ''
       with:
-        type: "A"
+        type: "AAAA"
         name: ${{ inputs.hostname }}
         content: ${{ inputs.cloudflare_ip }}
         ttl: 1
+        proxied: 'false'
         token: ${{ inputs.cloudflare_token }}
         zone: ${{ inputs.cloudflare_zone }}
