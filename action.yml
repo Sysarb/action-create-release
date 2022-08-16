@@ -21,6 +21,18 @@ inputs:
     description: 'Hostname of the micro service'
     required: false
 
+  cloudflare_ip:
+    description: 'External IP of the micro service'
+    required: false
+
+  cloudflare_token:
+    description: 'Cloudflare API token'
+    required: false
+
+  cloudflare_zone:
+    description: 'Cloudeflare DNS zone'
+    required: false
+
 runs:
   using: "composite"
   steps:
@@ -125,8 +137,8 @@ runs:
       with:
         type: "A"
         name: ${{ inputs.hostname }}
-        content: ${{ env.CLOUDFLARE_IP }}
+        content: ${{ inputs.cloudflare_ip }}
         ttl: 1
         proxied: false
-        token: ${{ env.CLOUDFLARE_TOKEN }}
-        zone: ${{ env.CLOUDFLARE_ZONE }}
+        token: ${{ inputs.cloudflare_token }}
+        zone: ${{ inputs.cloudflare_zone }}
